@@ -5,11 +5,44 @@ services:
   drupal:
     image: drupal:7-apache
     ports:
-      - 8080:80
+      - ${EXTERNAL_LISTEN_PORT}:80
     restart: always
+    volumes:
+      - "drupal-data:/var/www"
 
   mysql:
     image: mysql:5.5
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+    volumes:
+      - "mysql-data:/var/lib/mysql"
+
+  drush:
+    build: ./drush
+    restart: always
+    environment:
+      DRUPAL_DIR: /var/www/html
+      BACKUP_DIR: /backups
+      BACKUP_PREFIX: trend-drupal
+      MYSQL_PASS: ${MYSQL_PASS}
+      CRON_SCHEDULE: ${DRUSH_BACKUP_CRON_SCHEDULE}
+    volumes:
+      - "drupal-data:/var/www"
+      - "drush-backups:/backups"
+
+  awscli:
+    build: ./awscli
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - S3_BUCKET
+      - CRON_SCHEDULE=${S3_SYNC_CRON_SCHEDULE}
+      - BACKUP_DIR=/backups
+    volumes:
+      - "drush-backups:/backups:ro"
+
+volumes:
+  drupal-data:
+  drush-backups:
+  mysql-data:
