@@ -4,21 +4,32 @@ services:
 
   drupal:
     image: drupal:7-apache
+    container_name: trend_drupal
     ports:
       - ${EXTERNAL_LISTEN_PORT}:80
     restart: always
     volumes:
       - "drupal-data:/var/www"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
 
   mysql:
     image: mysql:5.5
+    container_name: trend_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
     volumes:
       - "mysql-data:/var/lib/mysql"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
 
   drush:
+    container_name: trend_drush
     build: ./drush
     restart: always
     environment:
@@ -30,8 +41,16 @@ services:
     volumes:
       - "drupal-data:/var/www"
       - "drush-backups:/backups"
+      # we don't use this volume, but we deal with it to stop a new volume
+      # being created everytime we bounce the stack
+      - "drush-app:/app"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
 
   awscli:
+    container_name: trend_backup
     build: ./awscli
     environment:
       - AWS_ACCESS_KEY_ID
@@ -41,8 +60,13 @@ services:
       - BACKUP_DIR=/backups
     volumes:
       - "drush-backups:/backups:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
 
 volumes:
   drupal-data:
   drush-backups:
+  drush-app:
   mysql-data:

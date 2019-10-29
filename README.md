@@ -24,11 +24,11 @@ Steps:
       ```
   1. copy the drush dump archive into the drush container
       ```bash
-      docker cp /path/to/website.20181127_053515.tar.gz trendsadocker_drush_1:/tmp/
+      docker cp /path/to/website.20181127_053515.tar.gz trend_drush:/tmp/
       ```
   1. exec into the drush container
       ```bash
-      docker exec -it trendsadocker_drush_1 sh
+      docker exec -it trend_drush sh
       ```
   1. create the mysql DB
       ```bash
@@ -52,17 +52,18 @@ Steps:
       ```bash
       # still in drush container
       exit
+      # (no longer in drush container)
       ```
   1. copy the `settings.php` file out to the host, so we can edit it
       ```bash
-      docker cp trendsadocker_drush_1:/var/www/html/sites/default/settings.php /tmp/settings.php
+      docker cp trend_drush:/var/www/html/sites/default/settings.php /tmp/settings.php
       sudo chown `id -u` /tmp/settings.php
       chmod 644 /tmp/settings.php
       ```
   1. edit the `/tmp/settings.php` file you have on your host to replace the old DB config (top of the file) with the new DB config at the bottom of the file. Then save it.
   1. copy the `settings.php` file from the host back into the container
       ```bash
-      docker cp /tmp/settings.php trendsadocker_drush_1:/var/www/html/sites/default/settings.php
+      docker cp /tmp/settings.php trend_drush:/var/www/html/sites/default/settings.php
       ```
   1. open your browser on the host to view the Drupal site: http://localhost:8080, or whatever you set `EXTERNAL_LISTEN_PORT` to
 
